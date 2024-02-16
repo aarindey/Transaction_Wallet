@@ -63,7 +63,7 @@ router.post("/signin", authMiddleware, async (req, res) => {
   const user = await User.findOne({ username: req.body.username });
   if (user) {
     const userId = user._id;
-    const token = jwt.sign({ userId: userId }.JWT_SECRET);
+    const token = jwt.sign({ userId: userId }, JWT_SECRET);
     res.status(200).json({
       message: "Login Successful!",
       token: token,
@@ -99,9 +99,12 @@ router.put("/", authMiddleware, async (req, res) => {
 
 // a get request to get the users with the given filter criteria
 router.get("/bulk", async (req, res) => {
-  const filter = req.params.filter || "";
+  const filter = req.query.filter;
   const users = await User.find({
-    $or: [{ firstname: { $regex: filter } }, { lastname: { $regex: filter } }],
+    $or: [
+      { firstname: { $regex: filter, $options: "i" } },
+      { lastname: { $regex: filter, $options: "i" } },
+    ],
   });
 
   res.json({
